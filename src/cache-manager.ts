@@ -1,7 +1,7 @@
 import { ServerResponse } from 'http'
 import { PassThrough } from 'stream'
 
-import { decodePayload } from './payload'
+import {decodePayload, PagePayload} from './payload'
 import { Cache, State } from './types'
 import { sleep } from './utils'
 
@@ -21,6 +21,14 @@ export async function unlock(key: string, cache: Cache) {
   await cache.del('lock:' + key)
 }
 
+export function isPayloadFine(payload: PagePayload) {
+  if (!payload) return false
+  if (payload.body.length <= 20 && payload.body[0] == 0 && payload.body[1] == 0) {
+    return false
+  }
+  return true
+}
+
 export async function serveCache(cache: Cache, key: string, forced: boolean): Promise<State> {
   if (forced) return { status: 'force' }
 
@@ -28,6 +36,9 @@ export async function serveCache(cache: Cache, key: string, forced: boolean): Pr
     const status = await cache.has('payload:' + key)
     if (status === 'hit') {
       const payload = decodePayload(await cache.get('payload:' + key))
+      if (!isPayloadFine(payload)) {
+          return { status: 'miss' }
+      }
       return { status: 'hit', payload }
     } else if (status === 'miss') {
       const lock = await hasLock(key, cache)
@@ -36,6 +47,9 @@ export async function serveCache(cache: Cache, key: string, forced: boolean): Pr
     } else {
       // stale
       const payload = decodePayload(await cache.get('payload:' + key))
+      if (!isPayloadFine(payload)) {
+          return { status: 'miss' }
+      }
       return { status: 'stale', payload }
     }
   } catch (e) {

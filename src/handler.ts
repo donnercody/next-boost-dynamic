@@ -1,7 +1,7 @@
 import { IncomingMessage } from 'http'
 import { gzipSync } from 'zlib'
 
-import { lock, send, serveCache, unlock } from './cache-manager'
+import {isPayloadFine, lock, send, serveCache, unlock} from './cache-manager'
 import { forMetrics, Metrics, serveMetrics } from './metrics'
 import { encodePayload } from './payload'
 import Renderer, { InitArgs } from './renderer'
@@ -78,7 +78,10 @@ const wrap: WrappedHandler = (cache, conf, renderer, next, metrics) => {
       if (rv.statusCode === 200) {
         // save gzipped data
         const payload = { headers: rv.headers, body: isZipped(rv.headers) ? body : gzipSync(body) }
-        await cache.set('payload:' + key, encodePayload(payload), ttl)
+        if (isPayloadFine(payload)) {
+          const encodedPayload = encodePayload(payload)
+          await cache.set('payload:' + key, encodedPayload, ttl)
+        }
       }
     } catch (e) {
       console.error('Error saving payload to cache', e)
