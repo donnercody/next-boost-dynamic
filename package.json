@@ -1,6 +1,6 @@
 {
   "name": "@donnercody/next-boost-dynamic",
-  "version": "0.15.3",
+  "version": "0.15.4",
   "description": "(Fork of next-boost) - Add a cache layer for next.js SSR pages. Use stale-while-revalidate to boost the performance.",
   "main": "dist/handler.js",
   "bin": {

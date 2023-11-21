@@ -27,7 +27,10 @@ export async function unlock(key: string, cache: Cache) {
  */
 export function isPayloadFine(payload: PagePayload) {
   if (!payload) return false
-  if (payload.body.length <= 20 && payload.body[0] == 0 && payload.body[1] == 0) {
+  if (payload.body.length <= 20 && payload.body[0] == 0x1f && payload.body[1] == 0x8b && payload.body[2] == 0x08) {
+    return false
+  }
+  if (payload.body.length <= 20) {
     return false
   }
   return true
