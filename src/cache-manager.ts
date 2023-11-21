@@ -21,6 +21,10 @@ export async function unlock(key: string, cache: Cache) {
   await cache.del('lock:' + key)
 }
 
+/**
+ * This method checks for 000000
+ * @param payload
+ */
 export function isPayloadFine(payload: PagePayload) {
   if (!payload) return false
   if (payload.body.length <= 20 && payload.body[0] == 0 && payload.body[1] == 0) {
